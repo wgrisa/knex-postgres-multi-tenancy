@@ -1,30 +1,36 @@
-mysql:
-  image: mysql:5.7.5
-  ports:
-    - 3306
-  environment:
-    MYSQL_ROOT_PASSWORD: root
-    MYSQL_USER: user
-    MYSQL_PASSWORD: password
-    MYSQL_DATABASE: multitenant
+version: '3'
 
+services:
+  test:
+    image: node:12
+    command: npm test
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - 4000
+    environment:
+      NODE_ENV: test
+      VIRTUAL_HOST: api-test.localtest.me
+      VIRTUAL_PORT: 4000
+      DB_DATABASE: api-test-db
+      DB_HOST: dbTest
+      DB_PASSWORD: password
+      DB_PORT: 5432
+      DB_USER: user
+      DATABASE_POOL_MIN: 0
+      DATABASE_POOL_MAX: 10
+    depends_on:
+      - dbTest
 
-postgres:
-  image: postgres:9.4.5
-  ports:
-    - 5432
-  environment:
-    POSTGRES_USER: user
-    POSTGRES_PASSWORD: password
-    POSTGRES_DB: multitenant
-
-test:
-  build: .
-  command: npm run waitdb-test
-  volumes:
-    - .:/app
-  links:
-    - mysql:mysql
-    - postgres:postgres
-  # environment:
-  #   DEBUG: knextancy:tenant
+  dbTest:
+    image: postgres:10.4
+    ports:
+      - 5432
+    command: postgres -D /run/pgsql-10.4-data -F
+    environment:
+      LOGGING_COLLECTOR: 'on'
+      PGDATA: /run/pgsql-10.4-data
+      POSTGRES_DB: api-test-db
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
