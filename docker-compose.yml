@@ -3,7 +3,7 @@ version: '3'
 services:
   test:
     image: node:12
-    command: npm test
+    command: npm run test
     working_dir: /usr/src/app
     volumes:
       - .:/usr/src/app

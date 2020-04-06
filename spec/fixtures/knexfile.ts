@@ -12,8 +12,5 @@ export default {
     migrations: {
       directory: './spec/fixtures/db/migrations',
     },
-    seeds: {
-      directory: './spec/fixtures/db/seeds',
-    },
   },
 }

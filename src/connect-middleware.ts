@@ -2,7 +2,7 @@
   Middleware that populates
  */
 export default function (setupTenant) {
-  return function (baseKnex, options) {
+  return function (baseKnex, options?) {
     const opts = options || {}
     const header = opts.header || 'x-client-id'
 
