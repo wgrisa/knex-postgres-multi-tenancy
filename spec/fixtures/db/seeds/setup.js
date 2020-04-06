@@ -1,3 +1,1 @@
-exports.seed = function() {
-
-};
+exports.seed = function () {}

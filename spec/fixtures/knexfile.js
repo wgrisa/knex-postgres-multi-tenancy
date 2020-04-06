@@ -1,14 +1,13 @@
-import url from 'url';
+import url from 'url'
 
-const client = process.env.DB_CLIENT;
+const client = process.env.DB_CLIENT
 
 function getEnv(type) {
-  const name = client.toUpperCase();
-  return process.env[`${name}_${type}`] || process.env[`${name}_ENV_${name}_${type}`];
+  const name = client.toUpperCase()
+  return process.env[`${name}_${type}`] || process.env[`${name}_ENV_${name}_${type}`]
 }
 
-const address = url.parse(process.env.DB_PORT || getEnv('PORT'));
-
+const address = url.parse(process.env.DB_PORT || getEnv('PORT'))
 
 export default {
   test: {
@@ -28,5 +27,4 @@ export default {
       directory: './spec/fixtures/db/seeds',
     },
   },
-
-};
+}
