@@ -1,7 +1,6 @@
 import { expect } from 'chai'
 
-import knextancy from '../src'
-import { getTenantConnection, knexConnection } from './spec-helper'
+import { getTenantConnection } from './spec-helper'
 
 describe('tenant raw queries', () => {
   describe('given some data in tenant 10', () => {

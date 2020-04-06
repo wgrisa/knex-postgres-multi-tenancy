@@ -1,24 +1,29 @@
 import { expect } from 'chai'
-import express from 'express'
+import express, { NextFunction, Request, Response } from 'express'
+import Knex from 'knex'
 import request from 'supertest'
 
 import knextancy from '../src'
 import { getTenantConnection, knexConnection } from './spec-helper'
 
+type KnexRequest = typeof Request & { knex: Knex }
+
 describe('connect-middleware with default settings', () => {
-  let app
+  let app = null
 
   before(() => {
     app = express()
 
     app.use(knextancy.middleware(knexConnection))
 
-    app.use((err, req, res, next) => (err ? res.status(500).send(err) : next()))
+    app.use((err: Error, _req: Request, res: Response, next: NextFunction) =>
+      err ? res.status(500).send(err) : next(),
+    )
 
-    app.get('/', async (req, res) => res.send(await req.knex('$_users')))
+    app.get('/', async (req: KnexRequest, res: Response) => res.send(await req.knex('$_users')))
   })
 
-  describe('given some data in tenant 01 and tenant 02', () => {
+  describe('given some data in tenant 1 and tenant 2', () => {
     beforeEach(async () => {
       const tenantOneConnection = await getTenantConnection(1)
       const tenantTwoConnection = await getTenantConnection(2)

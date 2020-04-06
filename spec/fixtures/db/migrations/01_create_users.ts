@@ -1,7 +1,7 @@
 import Knex from 'knex'
 
 export const up = (knex: Knex) =>
-  knex.schema.createTable('$_users', function (table) {
+  knex.schema.createTable('$_users', (table) => {
     table.increments('id').primary()
     table.string('name')
   })

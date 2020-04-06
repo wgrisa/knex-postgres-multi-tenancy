@@ -4,12 +4,9 @@
   "description": "Small library that provides a way of implementing multi-tenancy using table prefixes.",
   "main": "lib/index.js",
   "scripts": {
-    "compile": "babel -d lib/ src/",
-    "prepublish": "npm run compile",
     "test": "mocha --require ts-node/register spec/**/*.spec.ts",
     "test-watch": "mocha --require ts-node/register --watch --watch-files src, spec/**/*.spec.ts",
     "dsa": "docker stop $(docker ps -q) || true && docker rm $(docker ps -aq) || true",
-    "migrate": "ts-node ./bin/migrate-knex",
     "dt": "docker-compose up",
     "dnpm": "docker-compose run --rm test npm"
   },
@@ -37,8 +34,11 @@
     "promise-async-cache": "^1.0.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.11",
+    "@types/express": "^4.17.4",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.1.7",
+    "@types/supertest": "^2.0.8",
     "chai": "^4.2.0",
     "express": "^4.17.1",
     "mocha": "^7.1.1",
