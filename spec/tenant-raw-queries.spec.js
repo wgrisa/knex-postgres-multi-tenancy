@@ -3,8 +3,7 @@ import { expect } from 'chai'
 import knextancy from '../src'
 
 function wrap(text) {
-  const identifier = process.env.DB_CLIENT === 'mysql' ? '`' : '"'
-  return `${identifier}${text}${identifier}`
+  return `"${text}"`
 }
 
 describe('tenant raw queries', function () {

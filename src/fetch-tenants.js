@@ -1,18 +1,6 @@
 const REGEX_TENANT = /^([^_]+)_.*$/
 
 const clientsFetchTenants = {
-  mysql(knex) {
-    return knex
-      .raw(
-        `
-      SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema = (SELECT database())
-        AND table_name LIKE '%_knex_migrations'
-    `,
-      )
-      .then(([rows]) => rows.map((row) => row.table_name))
-  },
   pg(knex) {
     return knex
       .raw(

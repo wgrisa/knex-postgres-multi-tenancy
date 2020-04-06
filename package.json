@@ -23,14 +23,13 @@
     "knex",
     "multi",
     "tenancy",
-    "mysql",
     "postgres"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/bravi-software/knextancy"
+    "url": "https://github.com/wgrisa/knextancy"
   },
-  "bugs": "https://github.com/bravi-software/knextancy/issues",
+  "bugs": "https://github.com/wgrisa/knextancy/issues",
   "peerDependencies": {
     "knex": ">=0.8 && <=0.13"
   },
@@ -55,7 +54,6 @@
     "knex": "^0.13.0",
     "knex-spec-helper": "^0.1.2",
     "mocha": "^2.4.5",
-    "mysql": "^2.5.2",
     "pg": "^6.1.0",
     "prettier": "^2.0.4",
     "sinon": "^1.17.6",
