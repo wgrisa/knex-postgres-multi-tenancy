@@ -12,7 +12,7 @@
     "dnpm": "docker-compose run --rm test npm",
     "build": "tsc"
   },
-  "author": "Solvd",
+  "author": "Solvd Tech",
   "license": "MIT",
   "keywords": [
     "knex",
