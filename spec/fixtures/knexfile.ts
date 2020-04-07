@@ -11,4 +11,8 @@ export const knexTestConfiguration = {
   migrations: {
     directory: './spec/fixtures/db/migrations',
   },
+  pool: {
+    min: 0,
+    max: 10,
+  },
 }

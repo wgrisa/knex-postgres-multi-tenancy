@@ -36,13 +36,13 @@ describe('connect-middleware with default settings', () => {
       expect(body).to.eql([{ id: 1, name: 'Paulo', role_id: null }])
     })
 
-    it('should throw an error if the "x-client-id" header is not set', async () => {
+    it('throws an error if the "x-client-id" header is not set', async () => {
       const { text } = await request(app).get('/').expect(500)
 
       expect(text).to.eql(`Missing "x-client-id" from request header.`)
     })
 
-    it('should create the migrations table for a tenant', async () => {
+    it('creates the migrations table for a tenant', async () => {
       const result = await knexConnection('1_knex_migrations')
 
       expect(result.map((migrationFiles) => migrationFiles.name)).to.eql(['01_create_users.ts', '02_create_roles.ts'])

@@ -21,9 +21,11 @@ WHERE
     AND TABLE_NAME NOT LIKE '%knex_migrations'
     AND table_type = 'BASE TABLE'`
 
-const truncateAllTables = () =>
-  knexConnection.raw(baseTruncateSql).then((sqlQuery) => {
-    const query = sqlQuery.rows.map((sql) => sql.truncate_table_cmd).join('')
+const truncateAllTables = async () => {
+  const tablesToTruncate = await knexConnection.raw(baseTruncateSql)
+  const query = tablesToTruncate.rows
+    .map((truncateSqlResult: { truncate_table_cmd: string }) => truncateSqlResult.truncate_table_cmd)
+    .join('')
 
-    return knexConnection.raw(query)
-  })
+  return knexConnection.raw(query)
+}

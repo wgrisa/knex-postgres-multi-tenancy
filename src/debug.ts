@@ -1,3 +1,3 @@
 import debug from 'debug'
 
-export default (namespace) => debug(`knextancy:${namespace || '*'}`)
+export default (namespace: string) => debug(`knextancy:${namespace || '*'}`)

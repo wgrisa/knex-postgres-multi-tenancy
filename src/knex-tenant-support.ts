@@ -1,41 +1,47 @@
-import knex from 'knex'
+import knex, { Config, RawBinding, Sql } from 'knex'
 import QueryBuilder from 'knex/lib/query/builder'
 import Raw from 'knex/lib/raw'
 import Runner from 'knex/lib/runner'
 import SchemaBuilder from 'knex/lib/schema/builder'
 
-import { override, before, after } from './override'
 import createDebug from './debug'
+import { after, before, override } from './override'
 
 const debug = createDebug('client-multi-tenant')
 
 /**
- * Build knex tenant configuration changing details related to multitenant
+ * Build knex tenant configuration changing details related to multi-tenant
  */
-export function buildConfig(config, tenantId) {
-  const multitenantConfig = {
-    ...(config || {}),
+export const buildConfig = (config: Config, tenantId: number) => {
+  const multiTenantConfig = {
+    ...config,
     tenantId,
   }
 
-  multitenantConfig.migrations = { ...(multitenantConfig.migrations || {}) }
+  multiTenantConfig.migrations = { ...(multiTenantConfig.migrations || {}) }
 
   // custom migration with the table name prefix
-  const tableName = multitenantConfig.migrations.tableName || 'knex_migrations'
-  multitenantConfig.migrations.tableName = `${tenantId}_${tableName}`
+  const tableName = multiTenantConfig.migrations.tableName || 'knex_migrations'
+  multiTenantConfig.migrations.tableName = `${tenantId}_${tableName}`
 
-  return multitenantConfig
+  return multiTenantConfig
 }
 
 /**
  * Installs the tenant monkey patch on knex.
  *
  * It overrides some base knex functions changing the original behavior to
- * include multitenant configurations such as the tenant prefix in every table.
+ * include multi-tenant configurations such as the tenant prefix in every table.
  */
 export function install() {
+  const hasDefinedTenantId = Object.getOwnPropertyDescriptor(knex.Client.prototype, 'tenantId')
+
+  if (hasDefinedTenantId) {
+    return
+  }
+
   Object.defineProperty(knex.Client.prototype, 'tenantId', {
-    get: function () {
+    get() {
       return this.config.tenantId
     },
   })
@@ -43,32 +49,38 @@ export function install() {
   override(
     QueryBuilder.prototype,
     'toSQL',
-    after(function (sql) {
+    after(function (toSQLFunction: Sql) {
       debug('knex.Client.prototype.QueryBuilder.prototype.toSQL', arguments)
-      sql.sql = applyTenant(sql.sql, this.client.tenantId)
-      return sql
-    }),
-  )
 
-  override(
-    Raw.prototype,
-    'set',
-    before(function (sql, bindings) {
-      debug('knex.Client.prototype.Raw.prototype.set', arguments)
-      const tenantSQL = applyTenant(sql, this.client.tenantId)
-      return [tenantSQL, bindings]
+      toSQLFunction.sql = applyTenant(toSQLFunction.sql, this.client.tenantId)
+
+      return toSQLFunction
     }),
   )
 
   override(
     SchemaBuilder.prototype,
     'toSQL',
-    after(function (sql) {
+    after(function (toSQLSchemaQueries: Sql[]) {
       debug('knex.Client.prototype.SchemaBuilder.prototype.toSQL', arguments)
-      return sql.map((q) => {
-        q.sql = applyTenant(q.sql, this.client.tenantId)
-        return q
+
+      return toSQLSchemaQueries.map((toSQLFunction: Sql) => {
+        toSQLFunction.sql = applyTenant(toSQLFunction.sql, this.client.tenantId)
+
+        return toSQLFunction
       })
+    }),
+  )
+
+  override(
+    Raw.prototype,
+    'set',
+    before(function (rawSQLQuery: string, bindings: readonly RawBinding[]) {
+      debug('knex.Client.prototype.Raw.prototype.set', arguments)
+
+      const tenantSQL = applyTenant(rawSQLQuery, this.client.tenantId)
+
+      return [tenantSQL, bindings]
     }),
   )
 
@@ -77,28 +89,26 @@ export function install() {
     'query',
     after(async function (promise, originalArgs) {
       debug('knex.Client.prototype.Runner.prototype.query', arguments)
+
       const options = originalArgs[0].options
 
       const result = await promise
+
       if (!options || !options.nestTables) {
         return result
       }
 
-      return result.map((row) => {
-        return Object.keys(row).reduce((processedRow, tableJoinName) => {
-          processedRow[unapplyTenant(tableJoinName, this.client.tenantId)] = row[tableJoinName]
+      return result.map((row) =>
+        Object.keys(row).reduce((processedRow, tableJoinName) => {
+          processedRow[misapplyTenant(tableJoinName, this.client.tenantId)] = row[tableJoinName]
+
           return processedRow
-        }, {})
-      })
+        }, {}),
+      )
     }),
   )
 }
 
-function unapplyTenant(sql, tenant) {
-  const regexp = new RegExp(`^(${tenant}_)`)
-  return sql.replace(regexp, '$_')
-}
+const misapplyTenant = (sql: string, tenant: number) => sql.replace(new RegExp(`^(${tenant}_)`), '$_')
 
-function applyTenant(sql, tenant) {
-  return sql.replace(/\$_/g, tenant + '_')
-}
+const applyTenant = (sql: string, tenant: number) => sql.replace(/\$_/g, `${tenant}_`)

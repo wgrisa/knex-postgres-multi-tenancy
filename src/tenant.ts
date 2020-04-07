@@ -18,35 +18,34 @@ const cache = new PromiseAsyncCache({
   /**
    * Build knex tenant and load it to the cache
    */
-  async load(tenantId, baseKnex) {
+  async load(tenantId: number, baseKnex: knex) {
     if (!isMultiTenantSupportInstalled) {
       try {
-        debug('installing knextancy')
+        debug(`Installing knextancy for tenant ${tenantId}`)
         knexTenantSupport.install()
         isMultiTenantSupportInstalled = true
       } catch (err) {
-        debug('Error installing knex multi tenant support', err.stack || err)
+        debug(`Error installing knex multi tenant for tenant ${tenantId}`, err.stack || err)
         throw err
       }
     }
 
-    debug('building knex for new tenant %d', tenantId)
+    debug(`Building knex for tenant ${tenantId}`)
     const proxyKnex = knex(knexTenantSupport.buildConfig(baseKnex.client.config, tenantId))
 
     Object.defineProperty(proxyKnex, 'tenantId', {
-      get: function () {
+      get() {
         return this.client.tenantId
       },
     })
 
-    debug('initializing multi tenant database')
     if (baseKnex.client.config.migrations) {
-      debug('running migration tasks')
+      debug(`running migration tasks for tenant ${tenantId}`)
       await proxyKnex.migrate.latest()
     }
 
     if (baseKnex.client.config.seeds) {
-      debug('running seed tasks')
+      debug(`running seed tasks for tenant ${tenantId}`)
       await proxyKnex.seed.run()
     }
 
@@ -54,11 +53,11 @@ const cache = new PromiseAsyncCache({
   },
 })
 
-export default async function (baseKnex: knex, tenantId: number) {
+export const setupTenant = async (baseKnex: knex, tenantId: number) => {
   try {
     return cache.get(tenantId, baseKnex)
   } catch (err) {
-    debug('Error on initializing the multi tenant database', err.stack || err)
+    debug(`Error initializing the multi tenant database for tenant ${tenantId}`, err.stack || err)
     throw err
   }
 }
