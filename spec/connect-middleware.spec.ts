@@ -1,12 +1,10 @@
 import { expect } from 'chai'
 import express, { NextFunction, Request, Response } from 'express'
-import Knex from 'knex'
 import request from 'supertest'
 
 import knextancy from '../src'
+import { KnexRequest } from '../types'
 import { getTenantConnection, knexConnection } from './spec-helper'
-
-type KnexRequest = typeof Request & { knex: Knex }
 
 describe('connect-middleware with default settings', () => {
   let app = null
@@ -41,7 +39,7 @@ describe('connect-middleware with default settings', () => {
     it('should throw an error if the "x-client-id" header is not set', async () => {
       const { text } = await request(app).get('/').expect(500)
 
-      expect(text).to.eql('Missing x-client-id header')
+      expect(text).to.eql(`Missing "x-client-id" from request header.`)
     })
 
     it('should create the migrations table for a tenant', async () => {

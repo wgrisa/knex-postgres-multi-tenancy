@@ -1,18 +1,23 @@
+import { NextFunction, Response } from 'express'
+import knex from 'knex'
+
+import { KnexRequest } from '../types'
+
 /**
   Middleware that populates
  */
-export default function (setupTenant) {
-  return function (baseKnex, options?) {
-    const opts = options || {}
-    const header = opts.header || 'x-client-id'
+export const knextancyMiddleware = (setupTenant: (baseKnex: knex, tenantId: number) => Promise<knex>) => {
+  return (baseKnex: knex, options?: { header: any }) => {
+    const header = options?.header || 'x-client-id'
 
-    return async function middleware(req, res, next) {
+    return async (req: KnexRequest, _res: Response, next: NextFunction) => {
       const tenantId = req.header(header)
-      if (typeof tenantId === 'undefined') {
-        return next(`Missing ${header} header`)
+
+      if (!tenantId) {
+        return next(`Missing "${header}" from request header.`)
       }
 
-      req.knex = await setupTenant(baseKnex, tenantId)
+      req.knex = await setupTenant(baseKnex, +tenantId)
 
       next()
     }

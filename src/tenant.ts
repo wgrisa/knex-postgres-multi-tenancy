@@ -1,8 +1,8 @@
 import knex from 'knex'
 import PromiseAsyncCache from 'promise-async-cache'
-import * as knexTenantSupport from './knex-tenant-support'
 
 import createDebug from './debug'
+import * as knexTenantSupport from './knex-tenant-support'
 
 const debug = createDebug('tenant')
 
@@ -54,7 +54,7 @@ const cache = new PromiseAsyncCache({
   },
 })
 
-export default async function (baseKnex, tenantId) {
+export default async function (baseKnex: knex, tenantId: number) {
   try {
     return cache.get(tenantId, baseKnex)
   } catch (err) {
