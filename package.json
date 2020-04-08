@@ -26,7 +26,7 @@
   "bugs": "https://github.com/wgrisa/knex-postgres-multi-tenancy/issues",
   "dependencies": {
     "debug": "^4.1.1",
-    "knex": "^0.20.13",
+    "knex": "0.20.4",
     "promise-async-cache": "^1.0.0"
   },
   "devDependencies": {
